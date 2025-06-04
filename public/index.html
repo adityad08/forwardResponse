@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Universal Response Viewer</title>
+  <style>
+    textarea {
+      width: 90vw;
+      height: 60vh;
+      margin-top: 1rem;
+      font-family: monospace;
+    }
+    button {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      padding: 0.5rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>Received Data Viewer</h2>
+  <textarea id="dataBox" readonly placeholder="Waiting for data..."></textarea><br />
+  <button onclick="downloadFile()">Download Data</button>
+
+  <script>
+    const dataBox = document.getElementById('dataBox');
+
+    async function fetchData() {
+      try {
+        const res = await fetch('/data');
+        const text = await res.text();
+        dataBox.value = text;
+      } catch (e) {
+        dataBox.value = 'Error fetching data.';
+      }
+    }
+
+    function downloadFile() {
+      window.location.href = '/download';
+    }
+
+    // Poll for new data every 3 seconds
+    setInterval(fetchData, 3000);
+    fetchData();
+  </script>
+</body>
+</html>
