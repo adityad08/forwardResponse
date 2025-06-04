@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 let lastReceivedData = ''; // Store last request body in memory
 
-const LOCAL_DOTNET_URL = 'http://localhost:5000/api/receive'; 
+const LOCAL_DOTNET_URL = 'http://localhost:57477/ResponceHandler.aspx'; 
 // <-- CHANGE THIS to your .NET backend URL, 
 // if Node runs remotely, expose your .NET with ngrok or public URL here
 
