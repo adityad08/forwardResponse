@@ -4,34 +4,24 @@
   <meta charset="UTF-8" />
   <title>Universal Response Viewer</title>
   <style>
-    textarea {
-      width: 90vw;
-      height: 60vh;
-      margin-top: 1rem;
-      font-family: monospace;
-    }
-    button {
-      margin-top: 1rem;
-      font-size: 1.1rem;
-      padding: 0.5rem 1rem;
-    }
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    textarea { width: 100%; height: 60vh; font-family: monospace; }
+    button { margin-top: 1rem; padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h2>Received Data Viewer</h2>
-  <textarea id="dataBox" readonly placeholder="Waiting for data..."></textarea><br />
-  <button onclick="downloadFile()">Download Data</button>
+  <h2>📥 Received Data</h2>
+  <textarea id="dataBox" readonly>Loading...</textarea><br />
+  <button onclick="downloadFile()">⬇️ Download Response</button>
 
   <script>
-    const dataBox = document.getElementById('dataBox');
-
     async function fetchData() {
       try {
         const res = await fetch('/data');
         const text = await res.text();
-        dataBox.value = text;
+        document.getElementById('dataBox').value = text;
       } catch (e) {
-        dataBox.value = 'Error fetching data.';
+        document.getElementById('dataBox').value = '❌ Error loading data';
       }
     }
 
@@ -39,7 +29,7 @@
       window.location.href = '/download';
     }
 
-    // Poll for new data every 3 seconds
+    // Auto-refresh every 3 seconds
     setInterval(fetchData, 3000);
     fetchData();
   </script>
