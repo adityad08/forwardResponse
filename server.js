@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 let lastReceivedData = '';
 
 // ✅ Your local .NET endpoint (replace IP if needed)
-const LOCAL_DOTNET_URL = 'https://192.168.164.1:81/ResponceHandler.aspx';
+const LOCAL_DOTNET_URL = 'https://192.168.164.1:81/postResponse.aspx';
 
 // ✅ HTTPS Agent to ignore SSL certificate (for local development)
 const agent = new https.Agent({ rejectUnauthorized: false });
