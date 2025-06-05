@@ -1,53 +1,50 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch'); // install via npm i node-fetch@2
+const fetch = require('node-fetch'); // v2
+const https = require('https');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-let lastReceivedData = ''; // Store last request body in memory
+// Save the last received data in memory
+let lastReceivedData = '';
 
-const LOCAL_DOTNET_URL = 'https://192.168.164.1:81/ResponceHandler.aspx'; 
-// <-- CHANGE THIS to your .NET backend URL, 
-// if Node runs remotely, expose your .NET with ngrok or public URL here
+// ✅ Your local .NET endpoint (replace IP if needed)
+const LOCAL_DOTNET_URL = 'https://192.168.164.1:81/ResponceHandler.aspx';
 
-app.use(express.text({ type: '*/*', limit: '10mb' })); // Accept all content types as text
-app.use(express.static('public')); // Serve your UI files from 'public' folder
+// ✅ HTTPS Agent to ignore SSL certificate (for local development)
+const agent = new https.Agent({ rejectUnauthorized: false });
 
-// Function to forward requests to .NET backend
+app.use(express.text({ type: '*/*', limit: '10mb' }));
+app.use(express.static('public')); // Serve UI files
+
+// Forward request to .NET backend
 async function forwardRequest(req, res) {
   try {
     lastReceivedData = req.body;
     fs.writeFileSync('received.txt', lastReceivedData);
-    console.log('Received data:\n', lastReceivedData);
+    console.log('✅ Received:\n', lastReceivedData);
 
-    // Forward the request to .NET backend
     const forwardRes = await fetch(LOCAL_DOTNET_URL, {
       method: req.method,
       headers: {
         'Content-Type': req.headers['content-type'] || 'text/plain',
       },
-      // GET/HEAD do not have body
       body: (req.method === 'GET' || req.method === 'HEAD') ? null : lastReceivedData,
+      agent, // Ignore SSL validation
     });
 
     const forwardText = await forwardRes.text();
 
-    // Send combined response
-    res.send(`Data received and forwarded.\nResponse from .NET backend:\n${forwardText}`);
-
+    res.send(`✅ Data received and forwarded.\n\n🔁 Response from .NET backend:\n${forwardText}`);
   } catch (err) {
-    console.error('Forwarding error:', err);
+    console.error('❌ Error forwarding to .NET backend:', err);
     res.status(500).send('Error forwarding to .NET backend.');
   }
 }
 
-// Route to receive data and forward it
-app.all('/receive', (req, res) => {
-  forwardRequest(req, res);
-});
-
-// Root route: GET serves UI, others forward
+// POST/GET for root path
 app.all('/', (req, res) => {
   if (req.method === 'GET') {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -56,7 +53,12 @@ app.all('/', (req, res) => {
   }
 });
 
-// API to get last received data (for UI polling)
+// POST/GET to /receive
+app.all('/receive', (req, res) => {
+  forwardRequest(req, res);
+});
+
+// For UI to fetch latest data
 app.get('/data', (req, res) => {
   res.send(lastReceivedData || 'No data received yet.');
 });
@@ -67,10 +69,10 @@ app.get('/download', (req, res) => {
   if (fs.existsSync(filePath)) {
     res.download(filePath, 'response.txt');
   } else {
-    res.status(404).send('No data file found to download.');
+    res.status(404).send('No data file found.');
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
